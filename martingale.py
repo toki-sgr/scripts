@@ -37,33 +37,33 @@ class BetLog:
         self.refresh()
         self.time += 1
 
-    def output(self, page = 0):
+    def output(self, page=0):
         output = ""
         if page:
             output = "{} try #{}: capital: {}, bet: {} [{}] balance: {}, capital_after:{}".format(
                 "[ALL-IN]" if self.log[page - 1]["all_in"] else "",
-                self.log[page - 1]["time"],
-                self.log[page - 1]["capital"],
+                self.log[page - 1]["time"], self.log[page - 1]["capital"],
                 self.log[page - 1]["bet"],
                 "WON" if self.log[page - 1]["result"] else "LOST",
                 self.log[page - 1]["balance"],
-                self.log[page - 1]["capital_after"]
-            )
+                self.log[page - 1]["capital_after"])
         else:
             for line in self.log:
                 output += "{} try #{}: capital: {}, bet: {} [{}] balance: {}, capital_after:{}\n".format(
-                    "[ALL-IN]" if line["all_in"] else "",
-                    line["time"],
-                    line["capital"],
-                    line["bet"],
-                    "WON" if line["result"] else "LOST",
-                    line["balance"],
-                    line["capital_after"]
-                )
+                    "[ALL-IN]" if line["all_in"] else "", line["time"],
+                    line["capital"], line["bet"],
+                    "WON" if line["result"] else "LOST", line["balance"],
+                    line["capital_after"])
         return output
 
+
 class HardGambler:
-    def __init__(self, win_rate = 0.5, power = 2, origin_capital = 100000, origin_bet = 100, time_limit = 100):
+    def __init__(self,
+                 win_rate=0.5,
+                 power=2,
+                 origin_capital=100000,
+                 origin_bet=100,
+                 time_limit=100):
         self.win_rate = win_rate
         self.power = power
         self.origin_capital = origin_capital
@@ -106,19 +106,16 @@ class HardGambler:
                 last_won = True
             else:
                 # lost
-                balance = - bet
+                balance = -bet
                 last_won = False
             betlog.push_result(last_won, balance)
             betlog.submit()
-        
+
         # record result
         self.betlogs.append(betlog.output())
-        self.explogs.append({
-            "times": times,
-            "final_capital": capital
-        })
+        self.explogs.append({"times": times, "final_capital": capital})
 
-    def execute_experiment(self, exp_times = 1):
+    def execute_experiment(self, exp_times=1):
         for i in range(exp_times):
             self._gamble()
 
@@ -134,24 +131,28 @@ class HardGambler:
             final_capitals.append(explog["final_capital"])
             if explog["final_capital"] == 0:
                 self.exp_result["failed_times"] += 1
-            self.exp_result["total_balance"] += explog["final_capital"] - self.origin_capital
+            self.exp_result["total_balance"] += explog[
+                "final_capital"] - self.origin_capital
         self.exp_result["times_mean"] = mean(times)
         self.exp_result["times_min"] = min(times)
         self.exp_result["capital_mean"] = mean(final_capitals)
         self.exp_result["capital_max"] = max(final_capitals)
         self.exp_result["capital_stdev"] = int(stdev(final_capitals))
         self.exp_result["capital_variance"] = int(variance(final_capitals))
-        
-
 
     def output(self):
         return self.betlogs, self.explogs, self.exp_result
 
+
 if __name__ == "__main__":
-    hg = HardGambler(win_rate = 0.5, power = 2, origin_capital = 100000, origin_bet = 100, time_limit = 100)
+    hg = HardGambler(win_rate=0.5,
+                     power=2,
+                     origin_capital=100000,
+                     origin_bet=100,
+                     time_limit=100)
     hg.execute_experiment(100)
     betlogs, explogs, exp_result = hg.output()
-    
+
     # if len(explogs) == 1:
     #     print(betlogs[0])
     # else:
